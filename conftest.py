@@ -1,6 +1,8 @@
 from pytest import fixture
-# from selenium import webdriver
+from selenium import webdriver
 from config import Config
+import json
+
 
 #
 # @fixture(scope='function')
@@ -19,6 +21,17 @@ def pytest_addoption(parser):
     )
 
 
+def load_test_data(path):
+    with open(path) as data_file:
+        data = json.load(data_file)
+        return data
+
+@fixture(params=load_test_data('data/testData.json'))
+def test_data(request):
+    data = request.param
+    return data
+
+
 @fixture(scope='session')
 def env(request):
     print(request)
@@ -29,3 +42,18 @@ def env(request):
 def app_config(env):
     cfg = Config(env)
     return cfg
+
+
+@fixture(params=[
+    webdriver.Chrome,
+    webdriver.Firefox,
+    webdriver.Edge
+])
+def browser(request):
+    driver = request.param
+    drvr = driver()
+
+    yield drvr
+
+    drvr.quit()
+
